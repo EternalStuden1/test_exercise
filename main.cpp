@@ -1,11 +1,10 @@
 #include <winsock2.h>
 #include <windows.h>
-#include <stdio.h>
+#include <cstdio>
 #include <string>
 #include <iostream>
 #include <fstream>
 #include <algorithm>
-#include <memory>
 
 
 //данную библиотеку (libwsock32.a) я включил в линкер в своем компиляторе
@@ -184,7 +183,7 @@ void SaveLinks(std::string content, std::string path) {
     char *result;
     while (CurrentLink.l_shift != -1) {
         FindLink(content, "<a", CurrentLink);
-        fout.open(std::string(path) + "Link_" + std::to_string(counter) + ".txt");
+        fout.open(path + "Link_" + std::to_string(counter) + ".txt");
         fout << "Link: " << CurrentLink.link << "\nContent:\n";
         if (!ValidUrl(CurrentLink.link)){
             fout << "Invalid link!";
@@ -201,12 +200,14 @@ void SaveLinks(std::string content, std::string path) {
     while (CurrentLink.l_shift != -1) {
         FindLink(content, "<link", CurrentLink);
         fout << "Link: " << CurrentLink.link << "\nContent:\n";
+        fout << "Link: " << CurrentLink.link << "\nContent:\n";
         if (!ValidUrl(CurrentLink.link)){
             fout << "Invalid link!";
             fout.close();
         }
         else{
             result = OpenURL(CurrentLink.link, 0);
+            fout.open(path + "Link_" + std::to_string(counter) + ".txt");
             fout << result;
             fout.close();
             counter++;
@@ -221,7 +222,8 @@ std::string DirExists(std::string &path)
     if (code == INVALID_FILE_ATTRIBUTES)
         return "\nDoesntExists. Cause code: " + std::to_string(GetLastError());
     else{
-        if ((FILE_ATTRIBUTE_READONLY & code) == 0) return "Unable to write here. (READ ONLY)";
+        std::ofstream fout(path + "/Base.txt"); //проверка на возможность создания файлов в директории для текущего пользователя
+        if (!fout) return "Not enough rights to create new file here.";
         return (FILE_ATTRIBUTE_DIRECTORY & code) != 0 ? "exists" : "\nIt`s file, not directory";
     }
 }
